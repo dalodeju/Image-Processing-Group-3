@@ -5,6 +5,7 @@ import cv2
 import os
 from skimage.metrics import structural_similarity as ssim
 
+
 # Function for binary image processing (e.g., morphological operations)
 
 def convert_to_lab(image):
@@ -48,42 +49,42 @@ def flower_segmentation(image, pipeline_folder, index):
     L, A, B = cv2.split(lab_image)
 
     # Define image processing pipeline folder locations for each input image
-    pipeline_folder_output = f'{pipeline_folder}{index + 1}/'
+    pipeline_folder_output = f'{pipeline_folder}{index + 1}/'  # Adjusted indexing here
     L_out = pipeline_folder_output + 'L/'
     A_out = pipeline_folder_output + 'A/'
     B_out = pipeline_folder_output + 'B/'
 
     # writing the initial L.A.B images to the image processing pipeline
-    cv2.imwrite(f'{L_out}1_L_out.jpg', L)
-    cv2.imwrite(f'{A_out}1_A_out.jpg', A)
-    cv2.imwrite(f'{B_out}1_B_out.jpg', B)
+    cv2.imwrite(os.path.join(L_out, '1_L_out.jpg'), L)
+    cv2.imwrite(os.path.join(A_out, '1_A_out.jpg'), A)
+    cv2.imwrite(os.path.join(B_out, '1_B_out.jpg'), B)
 
     L_median = noise_reduction(L)
     A_median = noise_reduction(A)
     B_median = noise_reduction(B)
 
     # writing the median L.A.B images to the image processing pipeline
-    cv2.imwrite(f'{L_out}2_L_median.jpg', L_median)
-    cv2.imwrite(f'{A_out}2_A_median.jpg', A_median)
-    cv2.imwrite(f'{B_out}2_B_median.jpg', B_median)
+    cv2.imwrite(os.path.join(L_out, '2_L_median.jpg'), L_median)
+    cv2.imwrite(os.path.join(A_out, '2_A_median.jpg'), A_median)
+    cv2.imwrite(os.path.join(B_out, '2_B_median.jpg'), B_median)
 
     L_segmented = otsu_thresholding(L_median)
     A_segmented = otsu_thresholding(A_median)
     B_segmented = otsu_thresholding(B_median)
 
     # writing the equalized L.A.B images to the image processing pipeline
-    cv2.imwrite(f'{L_out}3_L_segmented.jpg', L_segmented)
-    cv2.imwrite(f'{A_out}3_A_segmented.jpg', A_segmented)
-    cv2.imwrite(f'{B_out}3_B_segmented.jpg', B_segmented)
+    cv2.imwrite(os.path.join(L_out, '3_L_segmented.jpg'), L_segmented)
+    cv2.imwrite(os.path.join(A_out, '3_A_segmented.jpg'), A_segmented)
+    cv2.imwrite(os.path.join(B_out, '3_B_segmented.jpg'), B_segmented)
 
     # Binary image processing
     L_processed = binary_processing(L_segmented)
     A_processed = binary_processing(A_segmented)
     B_processed = binary_processing(B_segmented)
 
-    cv2.imwrite(f'{L_out}4_L_processed.jpg', L_processed)
-    cv2.imwrite(f'{A_out}4_A_processed.jpg', A_processed)
-    cv2.imwrite(f'{B_out}4_B_processed.jpg', B_processed)
+    cv2.imwrite(os.path.join(L_out, '4_L_processed.jpg'), L_processed)
+    cv2.imwrite(os.path.join(A_out, '4_A_processed.jpg'), A_processed)
+    cv2.imwrite(os.path.join(B_out, '4_B_processed.jpg'), B_processed)
 
     return L_processed, A_processed, B_processed
 
@@ -111,11 +112,6 @@ def main():
     # path for ground truth images
     ground_truth_folder = "dataset/ground_truths/"
 
-    # defining the pipeline folders for when the flower_segmentation function is called (select based on difficulty level)
-    easy_pipeline_folder = 'imageprocessing-pipeline/easy/easy'
-    medium_pipeline_folder = 'imageprocessing-pipeline/medium/medium'
-    hard_pipeline_folder = 'imageprocessing-pipeline/hard/hard'
-
     for difficulty in ["easy", "medium", "hard"]:
         input_subfolder = os.path.join(input_folder, difficulty)
         output_subfolder = os.path.join(output_folder, difficulty)
@@ -135,6 +131,9 @@ def main():
         elif difficulty == "hard":
             pipeline_folder = hard_pipeline_folder
 
+        # Initialize index
+        index = 0
+
         for input_path, ground_truth_path in zip(input_paths, ground_truth_paths):
             # Create output folder for current image
             filename = os.path.splitext(os.path.basename(input_path))[0]
@@ -144,8 +143,11 @@ def main():
             # Read input image
             img = cv2.imread(input_path)
 
-            # Apply flower segmentation pipeline
-            L_segmented, A_segmented, B_segmented = flower_segmentation(img, pipeline_folder, 0)
+            # Apply flower segmentation pipeline with correct index
+            L_segmented, A_segmented, B_segmented = flower_segmentation(img, pipeline_folder, index)
+
+            # Increment index for next iteration
+            index += 1
 
             # Save segmented images
             cv2.imwrite(os.path.join(output_image_folder, "L_segmented.jpg"), L_segmented)
