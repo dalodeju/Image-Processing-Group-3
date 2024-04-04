@@ -20,7 +20,7 @@ The aim of this project is to develop a Python program capable of segmenting var
 1. **Install Python**: Download and install Python from [python.org](https://www.python.org/).
 2. **Install Required Libraries**: Use pip to install the necessary Python libraries:
    ```
-   pip install opencv-contrib-python matplotlib numpy
+   pip install opencv-contrib-python matplotlib numpy scikit-image
    ```
 3. Download the Dataset: Obtain the dataset containing images to be processed and place it in the folder named 'input-images'.
 
